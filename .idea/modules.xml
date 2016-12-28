@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/jzy3d-api/jzy3d-api.iml" filepath="$PROJECT_DIR$/jzy3d-api/jzy3d-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jzy3d-javafx/jzy3d-javafx.iml" filepath="$PROJECT_DIR$/jzy3d-javafx/jzy3d-javafx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jzy3d-jdt-core/jzy3d-jdt-core.iml" filepath="$PROJECT_DIR$/jzy3d-jdt-core/jzy3d-jdt-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jzy3d-master.iml" filepath="$PROJECT_DIR$/jzy3d-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jzy3d-swt/jzy3d-swt.iml" filepath="$PROJECT_DIR$/jzy3d-swt/jzy3d-swt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jzy3d-tutorials/jzy3d-tutorials.iml" filepath="$PROJECT_DIR$/jzy3d-tutorials/jzy3d-tutorials.iml" />
+    </modules>
+  </component>
+</project>
