@@ -565,6 +565,8 @@ public class assimulateExperiment {
                             tem.rss=medRss;
                             result.add(tem);
                         }
+                    }else{
+                        result.add(now);
                     }
 
                 }
@@ -572,7 +574,10 @@ public class assimulateExperiment {
         }
         return result;
     }
-    public BaseStation[] midValueDenoising(BaseStation[] originBaseStations){
+    public List<BaseStation> getParsedData(BaseStation[] originBaseStations,List<BaseStation> dbscanPoints){
+        if(dbscanPoints==null||dbscanPoints.size()==0){
+            return null;
+        }
         BaseStation[] baseStations=new BaseStation[originBaseStations.length];
         for(int i=0;i<originBaseStations.length;i++){
             baseStations[i]=new BaseStation(originBaseStations[i].getX(),originBaseStations[i].getY(),originBaseStations[i].u);
@@ -580,13 +585,22 @@ public class assimulateExperiment {
             baseStations[i].group=originBaseStations[i].group;
         }
         BaseStation[] locList=deRepetition(baseStations);
-        double blockSize=0.8;
+//        List<BaseStation> points=dbscanParse(baseStations,blockSize);
+        Map<BaseStation,BaseStation> rssMap=new HashMap<>();
+        for(BaseStation data:locList){
+            rssMap.put(data,data);
+        }
+        List<BaseStation> result=new LinkedList<>();
+        for(BaseStation data:dbscanPoints){
+            result.add(rssMap.get(data));
+        }
+        return result;
+    }
+    public BaseStation[] midValueDenoising(BaseStation[] originBaseStations,List<BaseStation> dbscanPoints,double blockSize){
+//        double blockSize=0.8;
+        List<BaseStation> points=getParsedData(originBaseStations,dbscanPoints);
         int initSize=1;
         int maxSize=2;
-        List<BaseStation> points=dbscanParse(baseStations,blockSize);
-        if(points==null||points.size()==0){
-            return null;
-        }
         int begin=0;
         int end=0;
         double maxX=points.get(0).getX();
@@ -634,6 +648,8 @@ public class assimulateExperiment {
         double aveDifDenoising=0.0,varianceDenoising=0.0;
         double aveDif=0.0,variance=0.0;
         System.out.println("computing");
+        double dbscanBlockSize=2;
+        List<BaseStation> dbscanPoints=dbscanParse(baseStations,dbscanBlockSize);
         for(int i=0;i<targetLocs.length;i++){
             Point res= computeLoc.getLoc(targetLocs[i],allRss[i],baseStations,baseStations,options,correlationCoefficient);
             locationResDif[i]=distance(res,targetLocs[i]);
@@ -644,7 +660,7 @@ public class assimulateExperiment {
             for(int j=0;j<baseStations.length;j++){
                 baseStations[j].setRss(allRss[i][j]);
             }
-            BaseStation[] afterDenoising=midValueDenoising(baseStations);
+            BaseStation[] afterDenoising=midValueDenoising(baseStations,dbscanPoints,dbscanBlockSize);
             if(afterDenoising!=null&&afterDenoising.length>0){
                 double [] rss=new double[afterDenoising.length];
                 for(int j=0;j<afterDenoising.length;j++){
@@ -743,7 +759,7 @@ public class assimulateExperiment {
     public static void main(String[] args){
         assimulateExperiment experiment=new assimulateExperiment();
         experiment.setBlockSize(1);
-        experiment.setWidth(400);
+        experiment.setWidth(200);
         experiment.setBaseStationNum(100);
         experiment.setTargetNum(5);
         experiment.setNlosMaxNum(10);
