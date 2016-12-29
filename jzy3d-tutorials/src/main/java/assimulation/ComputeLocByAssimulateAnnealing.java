@@ -15,7 +15,7 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
         }
         double addY=Math.sqrt(com-addX*addX);
         if(random.nextBoolean()){
-            addX*=(-1);
+            addY*=(-1);
         }
         return new Point(startX+addX,startY+addY);
     }
@@ -44,9 +44,8 @@ public Point getLoc(TargetLoc targetLoc,double [] rss,
         double aveRss=0.0;
         double squareRss=0.0;
         for(int i=0;i<rss.length;i++){
-            aveRss+=rss[i];
+            aveRss=aveRss*(i/(i+1.0))+rss[i]/(i+1);
         }
-        aveRss/=rss.length;
         for(int i=0;i<rss.length;i++){
             squareRss+=Math.pow((rss[i]-aveRss),2);
         }
@@ -76,24 +75,31 @@ public Point getLoc(TargetLoc targetLoc,double [] rss,
 
         for(int coolingTime=0;coolingTime<maxCoolingTime||Math.abs(temperature)>1e-6;coolingTime++){
             for(int iterationTime=0;iterationTime<maxIterationTime;iterationTime++){
-                Point next=neighborhood(x,y,random,com);
-                if(next.getX()>=minX&&next.getX()<=maxX&&next.getY()>=minY&&next.getY()<=maxY){
-                    gaussTime+=1;
+                Point next=null;
+//                int findTime=0;
+                do{
+                    next=neighborhood(x,y,random,com);
+//                    findTime++;
+//                    if(findTime>1000){
+//                        System.out.println();
+//                    }
+                }while(!(next.getX()>=minX&&next.getX()<=maxX&&next.getY()>=minY&&next.getY()<=maxY));
+                gaussTime+=1;
 //                    double correlation=correlationByOthers(next.getX(),next.getY(),rss,baseStations);
-                    double correlation=correlationCoefficient.getCorrelationCoefficient(next.getX(),next.getY(),rss,baseStations,aveRss,squareRss);
-                    if(correlation<bestCorrelation){
-                        bestX=next.getX();
-                        bestY=next.getY();
-                        bestCorrelation=correlation;
-                    }
-                    double rand=random.nextDouble();
-                    aveCorrelationDiff+=(correlation-preCorrelation);
-                    if(correlation<preCorrelation||Math.exp((preCorrelation-correlation)/temperature)>rand){
-                        x=next.getX();
-                        y=next.getY();
-                        preCorrelation=correlation;
-                    }
+                double correlation=correlationCoefficient.getCorrelationCoefficient(next.getX(),next.getY(),rss,baseStations,aveRss,squareRss);
+                if(correlation<bestCorrelation){
+                    bestX=next.getX();
+                    bestY=next.getY();
+                    bestCorrelation=correlation;
                 }
+                double rand=random.nextDouble();
+                aveCorrelationDiff+=(correlation-preCorrelation);
+                if(correlation<preCorrelation||Math.exp((preCorrelation-correlation)/temperature)>rand){
+                    x=next.getX();
+                    y=next.getY();
+                    preCorrelation=correlation;
+                }
+
             }
             temperature*=coolingRate;
         }
@@ -101,6 +107,7 @@ public Point getLoc(TargetLoc targetLoc,double [] rss,
 //        System.out.println("rss="+rss+";aveRss="+aveRss+";squareRss="+squareRss);
         System.out.println("targetLoc correlation="+correlationCoefficient.getCorrelationCoefficient(targetLoc.getX(),targetLoc.getY(),rss,baseStations,aveRss,squareRss));
         System.out.println("result correlation="+correlationCoefficient.getCorrelationCoefficient(bestX,bestY,rss,baseStations,aveRss,squareRss));
+        System.out.println("start correlation="+correlationCoefficient.getCorrelationCoefficient(startX,startY,rss,baseStations,aveRss,squareRss));
         return new Point(bestX,bestY);
     }
 }

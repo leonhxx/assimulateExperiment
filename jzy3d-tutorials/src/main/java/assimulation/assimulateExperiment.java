@@ -713,10 +713,10 @@ public class assimulateExperiment {
         for(int i=0;i<this.targetNum;i++){
             allRss[i]=getRss(targetLocs[i],baseStations);
         }
-        System.out.println("\n=========ByDivideToSmall============\n");
-        computeResult(options,baseStations,targetLocs,new ComputeLocByDivideToSmall(),allRss);
-//        System.out.println("\n=========ByAssimulateAnnealing============\n");
-//        computeResult(options,baseStations,targetLocs,new ComputeLocByAssimulateAnnealing(),allRss);
+//        System.out.println("\n=========ByDivideToSmall============\n");
+//        computeResult(options,baseStations,targetLocs,new ComputeLocByDivideToSmall(),allRss);
+        System.out.println("\n=========ByAssimulateAnnealing============\n");
+        computeResult(options,baseStations,targetLocs,new ComputeLocByAssimulateAnnealing(),allRss);
 
 //        drawConvex(baseStations,targetLocs,allRss);
 
@@ -759,9 +759,9 @@ public class assimulateExperiment {
     public static void main(String[] args){
         assimulateExperiment experiment=new assimulateExperiment();
         experiment.setBlockSize(1);
-        experiment.setWidth(200);
+        experiment.setWidth(400);
         experiment.setBaseStationNum(100);
-        experiment.setTargetNum(5);
+        experiment.setTargetNum(25);
         experiment.setNlosMaxNum(10);
         experiment.setBeta(3.5);
         experiment.setuMax(10);
