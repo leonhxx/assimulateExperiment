@@ -8,7 +8,14 @@ import java.util.Random;
  */
 public class TestDbscan {
     public static void main(String [] args){
-        System.out.println((int)Math.floor((10.1+0.5)/0.5));
+
+        double aveRss=0.0;
+        int [] rss={1,2,3,4,5};
+        for(int i=0;i<rss.length;i++){
+            aveRss=aveRss*(i/(i+1.0))+rss[i]/(i+1);
+            System.out.println(aveRss);
+        }
+//        System.out.println((int)Math.floor((10.1+0.5)/0.5));
 //        assimulateExperiment parseDbscan=new assimulateExperiment();
 //        parseDbscan.setSigma(70);
 //        Random random=new Random();

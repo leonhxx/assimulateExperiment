@@ -30,8 +30,12 @@ public class ComputeLocByDivideToSmall implements ComputeLoc{
         double aveRss=0.0;
         double squareRss=0.0;
         for(int i=0;i<rss.length;i++){
-            aveRss=aveRss*(i/(i+1))+rss[i]/(i+1);
+            aveRss=aveRss*(i/(i+1.0))+rss[i]/(i+1);
         }
+//        for(int i=0;i<rss.length;i++){
+//            aveRss+=rss[i];
+//        }
+//        aveRss/=rss.length;
         for(int i=0;i<rss.length;i++){
             squareRss+=Math.pow((rss[i]-aveRss),2);
         }

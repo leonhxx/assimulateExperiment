@@ -635,10 +635,6 @@ public class assimulateExperiment {
         double aveDif=0.0,variance=0.0;
         System.out.println("computing");
         for(int i=0;i<targetLocs.length;i++){
-//            double [] rss=getRss(targetLocs[i],baseStations);
-//            Point res= getLocByOrigin(4, rss, baseStations);
-//            Point res= getLocByAssimulateAnnealing(rss,baseStations,options);
-//            Point res= computeLoc.getLoc(targetLocs[i],testRss,baseStations,options,correlationCoefficient);
             Point res= computeLoc.getLoc(targetLocs[i],allRss[i],baseStations,baseStations,options,correlationCoefficient);
             locationResDif[i]=distance(res,targetLocs[i]);
             aveDif+=locationResDif[i];
@@ -661,7 +657,6 @@ public class assimulateExperiment {
                 System.out.println("dist="+dist+"; resDenoising:x="+resDenoising.getX()+",y="+resDenoising.getY()+";targetLoc:x="+targetLocs[i].getX()+",y="+targetLocs[i].getY());
                 System.out.println(".");
             }
-
 
         }
         aveDifDenoising/=locationResDifDenoising.size();
@@ -695,6 +690,7 @@ public class assimulateExperiment {
         options.setTemperature(100);
         options.setLength(0.25);
 
+//        correlationCoefficient=new CorrelationCoefficientByOthers();
         correlationCoefficient=new CorrelationCoefficientByMyself();
 
         double [][] allRss=new double[this.targetNum][this.baseStationNum];
@@ -747,13 +743,13 @@ public class assimulateExperiment {
     public static void main(String[] args){
         assimulateExperiment experiment=new assimulateExperiment();
         experiment.setBlockSize(1);
-        experiment.setWidth(70);
+        experiment.setWidth(400);
         experiment.setBaseStationNum(100);
         experiment.setTargetNum(5);
-        experiment.setNlosMaxNum(50);
+        experiment.setNlosMaxNum(10);
         experiment.setBeta(3.5);
-        experiment.setuMax(0);
-        experiment.setSigma(0);
+        experiment.setuMax(10);
+        experiment.setSigma(10);
         experiment.setP0(30);
         experiment.assimulate();
 //        experiment.testConvex();
