@@ -20,9 +20,71 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
         return new Point(startX+addX,startY+addY);
     }
 //    public Point getLoc(TargetLoc targetLoc,double [] rss, BaseStation[] baseStations,ComputeLocOptions options,CorrelationCoefficient correlationCoefficient){
-public Point getLoc(TargetLoc targetLoc,double [] rss,
-                    BaseStation[] originBaseStations, BaseStation[] baseStations,
-                    ComputeLocOptions options,CorrelationCoefficient correlationCoefficient){
+
+    class InitInfo{
+        public double getMinX() {
+            return minX;
+        }
+
+        public void setMinX(double minX) {
+            this.minX = minX;
+        }
+
+        public double getMaxX() {
+            return maxX;
+        }
+
+        public void setMaxX(double maxX) {
+            this.maxX = maxX;
+        }
+
+        public double getMinY() {
+            return minY;
+        }
+
+        public void setMinY(double minY) {
+            this.minY = minY;
+        }
+
+        public double getMaxY() {
+            return maxY;
+        }
+
+        public void setMaxY(double maxY) {
+            this.maxY = maxY;
+        }
+
+        public double getAveRss() {
+            return aveRss;
+        }
+
+        public void setAveRss(double aveRss) {
+            this.aveRss = aveRss;
+        }
+
+        public double getSquareRss() {
+            return squareRss;
+        }
+
+        public void setSquareRss(double squareRss) {
+            this.squareRss = squareRss;
+        }
+
+        public Point getInitPoint() {
+            return initPoint;
+        }
+
+        public void setInitPoint(Point initPoint) {
+            this.initPoint = initPoint;
+        }
+
+        private double minX,maxX,minY,maxY;
+        private double aveRss,squareRss;
+        private Point initPoint;
+    }
+    public InitInfo getInitPoint(TargetLoc targetLoc,double [] rss,
+                              BaseStation[] originBaseStations, BaseStation[] baseStations,
+                              ComputeLocOptions options,CorrelationCoefficient correlationCoefficient){
         double minX=Integer.MAX_VALUE+0.0;
         double maxX=Integer.MIN_VALUE+0.0;
         double minY=Integer.MAX_VALUE+0.0;
@@ -50,8 +112,43 @@ public Point getLoc(TargetLoc targetLoc,double [] rss,
             squareRss+=Math.pow((rss[i]-aveRss),2);
         }
 
-        double startX=(minX+maxX)/2;
-        double startY=(minY+maxY)/2;
+        int divNum=4;
+        double width=(maxX-minX)/divNum;
+        double length=(maxY-minY)/divNum;
+        double startX=minX+width/2,startY=minY+length/2,x,y;
+        double bestCorrelation=Integer.MAX_VALUE+0.0;
+        double correlation;
+        double bestX=startX,bestY=startY;
+        for(int i=0;i<divNum;i++){
+            for(int j=0;j<divNum;j++){
+                x=startX+j*width;
+                y=startY+i*length;
+                correlation=correlationCoefficient.getCorrelationCoefficient(x,y,rss,baseStations,aveRss,squareRss);
+                if(correlation<bestCorrelation){
+                    bestCorrelation=correlation;
+                    bestX=x;
+                    bestY=y;
+                }
+            }
+        }
+        InitInfo initPoint=new InitInfo();
+        initPoint.setAveRss(aveRss);
+        initPoint.setInitPoint(new Point(bestX,bestY));
+        initPoint.setMaxX(maxX);
+        initPoint.setMinX(minX);
+        initPoint.setMaxY(maxY);
+        initPoint.setMinY(minY);
+        initPoint.setSquareRss(squareRss);
+        return initPoint;
+    }
+    public Point getLoc(TargetLoc targetLoc,double [] rss,
+                    BaseStation[] originBaseStations, BaseStation[] baseStations,
+                    ComputeLocOptions options,CorrelationCoefficient correlationCoefficient){
+        InitInfo initInfo=getInitPoint(targetLoc,rss,originBaseStations,baseStations,options,correlationCoefficient);
+        double minX=initInfo.getMinX(),maxX=initInfo.getMaxX(),minY=initInfo.getMinY(),maxY=initInfo.getMaxY();
+        double aveRss=initInfo.getAveRss(),squareRss=initInfo.getSquareRss();
+        double startX=initInfo.getInitPoint().getX();
+        double startY=initInfo.getInitPoint().getY();
 
 //        double bestCorrelation=correlationByOthers(startX,startY,rss,baseStations);
         double bestCorrelation=correlationCoefficient.getCorrelationCoefficient(startX,startY,rss,baseStations,aveRss,squareRss);
@@ -76,13 +173,8 @@ public Point getLoc(TargetLoc targetLoc,double [] rss,
         for(int coolingTime=0;coolingTime<maxCoolingTime||Math.abs(temperature)>1e-6;coolingTime++){
             for(int iterationTime=0;iterationTime<maxIterationTime;iterationTime++){
                 Point next=null;
-//                int findTime=0;
                 do{
                     next=neighborhood(x,y,random,com);
-//                    findTime++;
-//                    if(findTime>1000){
-//                        System.out.println();
-//                    }
                 }while(!(next.getX()>=minX&&next.getX()<=maxX&&next.getY()>=minY&&next.getY()<=maxY));
                 gaussTime+=1;
 //                    double correlation=correlationByOthers(next.getX(),next.getY(),rss,baseStations);

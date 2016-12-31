@@ -700,8 +700,8 @@ public class assimulateExperiment {
 
 
         ComputeLocOptions options=new ComputeLocOptions();
-        options.setMaxCoolingTime(1000);
-        options.setMaxIterationTime(800);
+        options.setMaxCoolingTime(1200);
+        options.setMaxIterationTime(1600);
         options.setCoolingRate(0.98);
         options.setTemperature(100);
         options.setLength(0.25);
@@ -761,7 +761,7 @@ public class assimulateExperiment {
         experiment.setBlockSize(1);
         experiment.setWidth(400);
         experiment.setBaseStationNum(100);
-        experiment.setTargetNum(25);
+        experiment.setTargetNum(80);
         experiment.setNlosMaxNum(10);
         experiment.setBeta(3.5);
         experiment.setuMax(10);
