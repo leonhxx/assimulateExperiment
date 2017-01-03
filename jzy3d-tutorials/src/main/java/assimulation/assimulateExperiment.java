@@ -88,6 +88,17 @@ public class assimulateExperiment {
     int targetNum;
     int nlosMaxNum;
     double beta,uMax,sigma,p0;
+    int armseK;
+
+    public int getArmseK() {
+        return armseK;
+    }
+
+    public void setArmseK(int armseK) {
+        this.armseK = armseK;
+    }
+
+
 
     public void setBlockSize(double blockSize) {
         this.blockSize = blockSize;
@@ -642,54 +653,56 @@ public class assimulateExperiment {
 
     public void computeResult(ComputeLocOptions options, BaseStation[] baseStations,
                               TargetLoc[] targetLocs,ComputeLoc computeLoc,double [][] allRss){
-        List<Double> locationResDifDenoising=new LinkedList<Double>();
-//        double [] locationResDifDenoising=new double[targetLocs.length];
+//        List<Double> locationResDifDenoising=new LinkedList<Double>();
+        double [] locationResDifDenoising=new double[targetLocs.length];
         double [] locationResDif=new double[targetLocs.length];
-        double aveDifDenoising=0.0,varianceDenoising=0.0;
-        double aveDif=0.0,variance=0.0;
+        double armse=0.0,armseDenoising=0.0;
         System.out.println("computing");
         double dbscanBlockSize=2;
         List<BaseStation> dbscanPoints=dbscanParse(baseStations,dbscanBlockSize);
-        for(int i=0;i<targetLocs.length;i++){
-            Point res= computeLoc.getLoc(targetLocs[i],allRss[i],baseStations,baseStations,options,correlationCoefficient);
-            locationResDif[i]=distance(res,targetLocs[i]);
-            aveDif+=locationResDif[i];
-            System.out.println("dist="+locationResDif[i]+"; res:x="+res.getX()+",y="+res.getY()+"; targetLoc:x="+targetLocs[i].getX()+",y="+targetLocs[i].getY());
-            System.out.println(".");
 
+        for(int i=0;i<locationResDifDenoising.length;i++){
+            locationResDifDenoising[i]=-1;
+        }
+        for(int i=0;i<targetLocs.length;i++){
             for(int j=0;j<baseStations.length;j++){
                 baseStations[j].setRss(allRss[i][j]);
             }
             BaseStation[] afterDenoising=midValueDenoising(baseStations,dbscanPoints,dbscanBlockSize);
+            double [] rss=null;
             if(afterDenoising!=null&&afterDenoising.length>0){
-                double [] rss=new double[afterDenoising.length];
+                locationResDifDenoising[i]=0;
+                rss=new double[afterDenoising.length];
                 for(int j=0;j<afterDenoising.length;j++){
                     rss[j]=afterDenoising[j].rss;
                 }
-                Point resDenoising= computeLoc.getLoc(targetLocs[i],rss,baseStations,afterDenoising,options,correlationCoefficient);
-                double dist=distance(resDenoising,targetLocs[i]);
-                locationResDifDenoising.add(dist);
-                aveDifDenoising+=dist;
-                System.out.println("dist="+dist+"; resDenoising:x="+resDenoising.getX()+",y="+resDenoising.getY()+";targetLoc:x="+targetLocs[i].getX()+",y="+targetLocs[i].getY());
-                System.out.println(".");
             }
+            for(int k=0;k<armseK;k++){
+                Point res= computeLoc.getLoc(targetLocs[i],allRss[i],baseStations,baseStations,options,correlationCoefficient);
+                locationResDif[i]=locationResDif[i]*k/(k+1.0)+Math.pow(distance(res,targetLocs[i]),2)/(k+1.0);
 
+                if(rss!=null){
+                    Point resDenoising= computeLoc.getLoc(targetLocs[i],rss,baseStations,afterDenoising,options,correlationCoefficient);
+                    locationResDifDenoising[i]=locationResDifDenoising[i]*k/(k+1.0)+Math.pow(distance(resDenoising,targetLocs[i]),2)/(k+1.0);
+//                    System.out.println("dist="+dist+"; resDenoising:x="+resDenoising.getX()+",y="+resDenoising.getY()+";targetLoc:x="+targetLocs[i].getX()+",y="+targetLocs[i].getY());
+//                    System.out.println(".");
+                }
+            }
+            locationResDif[i]/=armseK;
+            locationResDif[i]=Math.sqrt(locationResDif[i]);
+            locationResDifDenoising[i]/=armseK;
+            locationResDifDenoising[i]=Math.sqrt(locationResDifDenoising[i]);
+            System.out.println("locationResDif="+locationResDif[i]+" ; locationResDifDenoising[i]="+locationResDifDenoising[i]);
+            System.out.println(".");
         }
-        aveDifDenoising/=locationResDifDenoising.size();
-        for(int i=0;i<locationResDifDenoising.size();i++){
-            varianceDenoising+=Math.pow(locationResDifDenoising.get(i)-aveDifDenoising,2);
+        int denoisnum=0;
+        for(int i=0;i<targetLocs.length;i++){
+            armse=armse*i/(i+1.0)+locationResDif[i]/(i+1.0);
+            if(locationResDifDenoising[i]!=-1){
+                armseDenoising=armseDenoising*denoisnum/(denoisnum+1.0)+locationResDifDenoising[i]/(denoisnum+1.0);
+            }
         }
-        varianceDenoising/=locationResDifDenoising.size();
-
-        System.out.println("aveDifDenoising="+aveDifDenoising+" , varianceDenoising="+varianceDenoising);
-
-        aveDif/=locationResDif.length;
-        for(int i=0;i<locationResDif.length;i++){
-            variance+=Math.pow(locationResDif[i]-aveDif,2);
-        }
-        variance/=locationResDif.length;
-
-        System.out.println("aveDif="+aveDif+" , variance="+variance);
+        System.out.println("armse="+armse+" ; armseDenoising="+armseDenoising);
     }
     public void assimulate(){
         System.out.println("begining base stations ...!");
@@ -701,7 +714,7 @@ public class assimulateExperiment {
 
         ComputeLocOptions options=new ComputeLocOptions();
         options.setMaxCoolingTime(1200);
-        options.setMaxIterationTime(1600);
+        options.setMaxIterationTime(1000);
         options.setCoolingRate(0.98);
         options.setTemperature(100);
         options.setLength(0.25);
@@ -762,11 +775,12 @@ public class assimulateExperiment {
         experiment.setWidth(400);
         experiment.setBaseStationNum(100);
         experiment.setTargetNum(80);
-        experiment.setNlosMaxNum(10);
+        experiment.setNlosMaxNum(20);
         experiment.setBeta(3.5);
         experiment.setuMax(10);
         experiment.setSigma(10);
         experiment.setP0(30);
+        experiment.setArmseK(10);
         experiment.assimulate();
 //        experiment.testConvex();
     }

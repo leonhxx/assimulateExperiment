@@ -195,11 +195,11 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
             }
             temperature*=coolingRate;
         }
-        System.out.println("aveCorrelationDiff="+(aveCorrelationDiff/gaussTime));
-//        System.out.println("rss="+rss+";aveRss="+aveRss+";squareRss="+squareRss);
-        System.out.println("targetLoc correlation="+correlationCoefficient.getCorrelationCoefficient(targetLoc.getX(),targetLoc.getY(),rss,baseStations,aveRss,squareRss));
-        System.out.println("result correlation="+correlationCoefficient.getCorrelationCoefficient(bestX,bestY,rss,baseStations,aveRss,squareRss));
-        System.out.println("start correlation="+correlationCoefficient.getCorrelationCoefficient(startX,startY,rss,baseStations,aveRss,squareRss));
+//        System.out.println("aveCorrelationDiff="+(aveCorrelationDiff/gaussTime));
+////        System.out.println("rss="+rss+";aveRss="+aveRss+";squareRss="+squareRss);
+//        System.out.println("targetLoc correlation="+correlationCoefficient.getCorrelationCoefficient(targetLoc.getX(),targetLoc.getY(),rss,baseStations,aveRss,squareRss));
+//        System.out.println("result correlation="+correlationCoefficient.getCorrelationCoefficient(bestX,bestY,rss,baseStations,aveRss,squareRss));
+//        System.out.println("start correlation="+correlationCoefficient.getCorrelationCoefficient(startX,startY,rss,baseStations,aveRss,squareRss));
         return new Point(bestX,bestY);
     }
 }
