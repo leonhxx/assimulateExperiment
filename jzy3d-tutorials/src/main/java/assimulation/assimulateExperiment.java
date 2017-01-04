@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.List;
 
 import weka.classifiers.*;
+import weka.clusterers.ClusterEvaluation;
 import weka.clusterers.DBSCAN;
 import weka.core.*;
 
@@ -90,6 +91,15 @@ public class assimulateExperiment {
     double beta,uMax,sigma,p0;
     int armseK;
 
+    public double getDiscreteRatio() {
+        return discreteRatio;
+    }
+
+    public void setDiscreteRatio(double discreteRatio) {
+        this.discreteRatio = discreteRatio;
+    }
+
+    double discreteRatio;
     public int getArmseK() {
         return armseK;
     }
@@ -154,7 +164,8 @@ public class assimulateExperiment {
         int totalNum=widthNum*widthNum;
         Map<BaseStation,Boolean> mark=new HashMap<>();
         int num=0;
-        while(num<baseStationNum){
+        int cluserNum=(int)(baseStationNum*(1-discreteRatio));
+        while(num<cluserNum){
             int next=random.nextInt(totalNum);
             int x=next%widthNum;
             int y=next/widthNum;
@@ -162,8 +173,8 @@ public class assimulateExperiment {
             if(!mark.containsKey(center)){
                 baseStations[num++]=center;
                 mark.put(center,true);
-                if((baseStationNum-num)>0){
-                    int neighborhoodNum=random.nextInt(baseStationNum-num);
+                if((cluserNum-num)>0){
+                    int neighborhoodNum=random.nextInt(cluserNum-num);
                     neighborhoodNum=neighborhoodNum<30?neighborhoodNum:30;
                     int hasgenerate=0;
                     while(hasgenerate<neighborhoodNum){
@@ -175,6 +186,16 @@ public class assimulateExperiment {
                         }
                     }
                 }
+            }
+        }
+        while(num<baseStationNum){
+            int next=random.nextInt(totalNum);
+            int x=next%widthNum;
+            int y=next/widthNum;
+            BaseStation center=new BaseStation((x+1/2)*blockSize,(y+1/2)*blockSize,random.nextDouble()*uMax);
+            if(!mark.containsKey(center)){
+                baseStations[num++]=center;
+                mark.put(center,true);
             }
         }
         return baseStations;
@@ -240,7 +261,7 @@ public class assimulateExperiment {
     public double [] getRss(TargetLoc targetLoc,BaseStation[] baseStations){
         Random random=new Random();
         boolean[] baseStationNlos=new boolean[baseStations.length];
-        for(int i=0;i<nlosMaxNum;i++){
+        for(int i=0;i<nlosMaxNum&&i<baseStations.length;i++){
             if(!baseStationNlos[random.nextInt(baseStations.length)]){
                 baseStationNlos[random.nextInt(baseStations.length)]=true;
             }else{
@@ -463,6 +484,20 @@ public class assimulateExperiment {
         for(BaseStation x:baseStations){
             rssMap.put(new Point(x.getX(),x.getY()),x.rss);
         }
+//        try{
+//            ClusterEvaluation eval = new ClusterEvaluation();
+//            eval.setClusterer(dbscan);
+//            eval.evaluateClusterer(ins);
+//            System.out.println(ins.toString());
+//            double[] num = eval.getClusterAssignments();
+//            for (int i = 0; i < num.length; i++)
+//            {
+//                System.out.println(String.valueOf( num[i]));
+//            }
+//            System.out.println(eval.clusterResultsToString());
+//            System.out.println(eval.getNumClusters());
+//        }catch (Exception e){
+//        }
         Enumeration<Instance> enumeration=ins.enumerateInstances();
         while(enumeration.hasMoreElements()){
             Instance in=enumeration.nextElement();
@@ -497,11 +532,13 @@ public class assimulateExperiment {
         Instances ins=getInstances(baseStations);
         DBSCAN dbscan=new DBSCAN();
 //        String [] options={"-D","weka.clusterers.forOPTICSAndDBScan.DataObjects.EuclideanDataObject"};
-        String [] options={"-D","assimulation.MyDataObject"};
+//        String [] options={"-D","assimulation.MyDataObject"};
         try{
 //            dbscan.setOptions(options);
-            dbscan.setDatabase_Type("weka.clusterers.forOPTICSAndDBScan.Databases.SequentialDatabase");
-            dbscan.setDatabase_distanceType("weka.clusterers.forOPTICSAndDBScan.DataObjects.EuclideanDataObject");
+//            dbscan.setDatabase_Type("weka.clusterers.forOPTICSAndDBScan.DataObjects.DataObject");
+//            dbscan.setDatabase_Type("weka.clusterers.forOPTICSAndDBScan.Databases.SequentialDatabase");
+            dbscan.setDatabase_distanceType("assimulation.MyDataObject");
+//            dbscan.setDatabase_distanceType("weka.clusterers.forOPTICSAndDBScan.DataObjects.EuclideanDataObject");
             dbscan.setEpsilon(block);
             dbscan.setMinPoints(3);
             dbscan.buildClusterer(ins);
@@ -585,15 +622,23 @@ public class assimulateExperiment {
         }
         return result;
     }
-    public List<BaseStation> getParsedData(BaseStation[] originBaseStations,List<BaseStation> dbscanPoints){
-        if(dbscanPoints==null||dbscanPoints.size()==0){
-            return null;
+    class ParsedData{
+        public ParsedData(){
+            dbscanData=new LinkedList<>();
+            discreteData=new LinkedList<>();
         }
+        List<BaseStation> dbscanData;
+        List<BaseStation> discreteData;
+    }
+    public ParsedData getParsedData(BaseStation[] originBaseStations,List<BaseStation> dbscanPoints){
+//        if(dbscanPoints==null||dbscanPoints.size()==0){
+//            return null;
+//        }
         BaseStation[] baseStations=new BaseStation[originBaseStations.length];
         for(int i=0;i<originBaseStations.length;i++){
             baseStations[i]=new BaseStation(originBaseStations[i].getX(),originBaseStations[i].getY(),originBaseStations[i].u);
             baseStations[i].rss=originBaseStations[i].rss;
-            baseStations[i].group=originBaseStations[i].group;
+            baseStations[i].group=Integer.MIN_VALUE;
         }
         BaseStation[] locList=deRepetition(baseStations);
 //        List<BaseStation> points=dbscanParse(baseStations,blockSize);
@@ -601,35 +646,44 @@ public class assimulateExperiment {
         for(BaseStation data:locList){
             rssMap.put(data,data);
         }
-        List<BaseStation> result=new LinkedList<>();
+        ParsedData parsedData=new ParsedData();
         for(BaseStation data:dbscanPoints){
-            result.add(rssMap.get(data));
+            BaseStation origData=rssMap.get(data);
+            if(origData!=null){
+                origData.group=data.group;
+                rssMap.remove(data);
+                parsedData.dbscanData.add(origData);
+            }
         }
-        return result;
+        parsedData.discreteData.addAll(rssMap.values());
+        return parsedData;
     }
     public BaseStation[] midValueDenoising(BaseStation[] originBaseStations,List<BaseStation> dbscanPoints,double blockSize){
 //        double blockSize=0.8;
-        List<BaseStation> points=getParsedData(originBaseStations,dbscanPoints);
+        ParsedData parsedData=getParsedData(originBaseStations,dbscanPoints);
+        List<BaseStation> points=parsedData.dbscanData;
         int initSize=1;
         int maxSize=2;
         int begin=0;
-        int end=0;
-        double maxX=points.get(0).getX();
-        double minX=points.get(0).getX();
-        double maxY=points.get(0).getY();
-        double minY=points.get(0).getY();
+        int end=-1;
+        double maxX=Integer.MIN_VALUE+0.0;
+        double minX=Integer.MAX_VALUE+0.0;
+        double maxY=Integer.MIN_VALUE+0.0;
+        double minY=Integer.MAX_VALUE+0.0;
         List<BaseStation> result=new LinkedList<>();
-        for(int i=1;i<points.size();i++){
+        for(int i=0;i<points.size();i++){
             BaseStation point=points.get(i);
-            if(point.group==points.get(end).group){
+            if(point.group==points.get(begin).group){
                 if(maxX<point.getX()){
                     maxX=point.getX();
-                }else if(minX>point.getX()){
+                }
+                if(minX>point.getX()){
                     minX=point.getX();
                 }
                 if(maxY<point.getY()){
                     maxY=point.getY();
-                }else if(minY>point.getY()){
+                }
+                if(minY>point.getY()){
                     minY=point.getY();
                 }
                 end=i;
@@ -643,7 +697,10 @@ public class assimulateExperiment {
                 end=i;
             }
         }
-        result.addAll(parseDomain(points,begin,end,maxX,minX,maxY,minY,initSize,maxSize,blockSize));
+        if(end>=begin){
+            result.addAll(parseDomain(points,begin,end,maxX,minX,maxY,minY,initSize,maxSize,blockSize));
+        }
+        result.addAll(parsedData.discreteData);
         BaseStation[] res=new BaseStation[result.size()];
         return result.toArray(res);
     }
@@ -688,9 +745,9 @@ public class assimulateExperiment {
 //                    System.out.println(".");
                 }
             }
-            locationResDif[i]/=armseK;
+//            locationResDif[i]/=armseK;
             locationResDif[i]=Math.sqrt(locationResDif[i]);
-            locationResDifDenoising[i]/=armseK;
+//            locationResDifDenoising[i]/=armseK;
             locationResDifDenoising[i]=Math.sqrt(locationResDifDenoising[i]);
             System.out.println("locationResDif="+locationResDif[i]+" ; locationResDifDenoising[i]="+locationResDifDenoising[i]);
             System.out.println(".");
@@ -700,6 +757,7 @@ public class assimulateExperiment {
             armse=armse*i/(i+1.0)+locationResDif[i]/(i+1.0);
             if(locationResDifDenoising[i]!=-1){
                 armseDenoising=armseDenoising*denoisnum/(denoisnum+1.0)+locationResDifDenoising[i]/(denoisnum+1.0);
+                denoisnum++;
             }
         }
         System.out.println("armse="+armse+" ; armseDenoising="+armseDenoising);
@@ -711,6 +769,9 @@ public class assimulateExperiment {
         TargetLoc[] targetLocs = createTargetLoc(baseStations);
         System.out.println("end TargetLoc!");
 
+
+        Draw draw=new Draw("baseStation");
+        draw.drawDistribution(baseStations);
 
         ComputeLocOptions options=new ComputeLocOptions();
         options.setMaxCoolingTime(1200);
@@ -773,14 +834,15 @@ public class assimulateExperiment {
         assimulateExperiment experiment=new assimulateExperiment();
         experiment.setBlockSize(1);
         experiment.setWidth(400);
-        experiment.setBaseStationNum(100);
-        experiment.setTargetNum(80);
+        experiment.setBaseStationNum(20);
+        experiment.setTargetNum(20);
         experiment.setNlosMaxNum(20);
         experiment.setBeta(3.5);
         experiment.setuMax(10);
         experiment.setSigma(10);
         experiment.setP0(30);
-        experiment.setArmseK(10);
+        experiment.setArmseK(1);
+        experiment.setDiscreteRatio(1);
         experiment.assimulate();
 //        experiment.testConvex();
     }

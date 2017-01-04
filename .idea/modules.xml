@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/draw/draw.iml" filepath="$PROJECT_DIR$/draw/draw.iml" />
       <module fileurl="file://$PROJECT_DIR$/jzy3d-api/jzy3d-api.iml" filepath="$PROJECT_DIR$/jzy3d-api/jzy3d-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/jzy3d-javafx/jzy3d-javafx.iml" filepath="$PROJECT_DIR$/jzy3d-javafx/jzy3d-javafx.iml" />
       <module fileurl="file://$PROJECT_DIR$/jzy3d-jdt-core/jzy3d-jdt-core.iml" filepath="$PROJECT_DIR$/jzy3d-jdt-core/jzy3d-jdt-core.iml" />

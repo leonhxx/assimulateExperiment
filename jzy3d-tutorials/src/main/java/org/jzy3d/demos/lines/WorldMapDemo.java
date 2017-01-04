@@ -33,7 +33,7 @@ public class WorldMapDemo extends AbstractAnalysis {
 
         // Instantiate world map and parse the file
         WorldMapLoader worldMap = new WorldMapLoader();
-        worldMap.parseFile("data/csvfiles/world_map.csv");
+        worldMap.parseFile("/Users/hongxiaoxiao/Downloads/software/jzy3d-api-master/jzy3d-tutorials/data/csvfiles/world_map.csv");
 
         // Add world map line stripe to chart
         chart.getScene().getGraph().add(worldMap.lineStrips);
