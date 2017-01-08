@@ -137,13 +137,13 @@ public class assimulateExperiment {
         return baseStations;
     }
     public BaseStation getNeighborhood(Random random,BaseStation center){
-        double rand=random.nextDouble();
-        double len=random.nextDouble()*3;
-        double com=len*len;
+        double rand;
+        double len;
+        double com;
         BaseStation neighborhood=null;
         do{
             rand=random.nextDouble();
-            len=random.nextDouble()*3;
+            len=random.nextDouble()*10;
             com=len*len;
             double addX=rand*len;
             if(random.nextBoolean()){
@@ -349,7 +349,7 @@ public class assimulateExperiment {
                     double centerX=startX+j*width;
                     double centerY=startY+i*length;
 //                    double correlation=correlationByOthers(centerX,centerY,rss,baseStations);
-                    double correlation=correlationCoefficient.getCorrelationCoefficient(centerX,centerY,rss,baseStations,aveRss,squareRss);
+                    double correlation=correlationCoefficient.getCorrelationCoefficient(centerX,centerY,rss,baseStations,aveRss,squareRss).getCorrelation();
                     correlationPoints[i*divNum+j]=new CorrelationPoint(centerX,centerY,correlation);
                 }
             }
@@ -398,7 +398,7 @@ public class assimulateExperiment {
                 double centerX=startX+j*width;
                 double centerY=startY+i*length;
 //                double correlation=correlationByOthers(centerX,centerY,rss,baseStations);
-                double correlation=correlationCoefficient.getCorrelationCoefficient(centerX,centerY,rss,baseStations,aveRss,squareRss);
+                double correlation=correlationCoefficient.getCorrelationCoefficient(centerX,centerY,rss,baseStations,aveRss,squareRss).getCorrelation();
                 correlationPoints[i*divNum+j]=new CorrelationPoint(centerX,centerY,correlation);
             }
         }
@@ -461,6 +461,13 @@ public class assimulateExperiment {
     }
     private static final Attribute xAttribute=new Attribute("x");
     private static final Attribute yAttribute=new Attribute("y");
+    public static Attribute getxAttribute() {
+        return xAttribute;
+    }
+
+    public static Attribute getyAttribute() {
+        return yAttribute;
+    }
     public Instances getInstances(BaseStation[] baseStations){
         FastVector fastVector=new FastVector(2);
         fastVector.addElement(xAttribute);
@@ -715,7 +722,7 @@ public class assimulateExperiment {
         double [] locationResDif=new double[targetLocs.length];
         double armse=0.0,armseDenoising=0.0;
         System.out.println("computing");
-        double dbscanBlockSize=2;
+        double dbscanBlockSize=5;
         List<BaseStation> dbscanPoints=dbscanParse(baseStations,dbscanBlockSize);
 
         for(int i=0;i<locationResDifDenoising.length;i++){
@@ -776,7 +783,7 @@ public class assimulateExperiment {
         ComputeLocOptions options=new ComputeLocOptions();
         options.setMaxCoolingTime(1200);
         options.setMaxIterationTime(1000);
-        options.setCoolingRate(0.98);
+        options.setCoolingRate(0.99);
         options.setTemperature(100);
         options.setLength(0.25);
 
@@ -787,11 +794,15 @@ public class assimulateExperiment {
         for(int i=0;i<this.targetNum;i++){
             allRss[i]=getRss(targetLocs[i],baseStations);
         }
+        long startTime = System.currentTimeMillis();
 //        System.out.println("\n=========ByDivideToSmall============\n");
 //        computeResult(options,baseStations,targetLocs,new ComputeLocByDivideToSmall(),allRss);
+//        System.out.println((System.currentTimeMillis()-startTime)/1000);
         System.out.println("\n=========ByAssimulateAnnealing============\n");
+        options.setLength(0.35);
+        startTime = System.currentTimeMillis();
         computeResult(options,baseStations,targetLocs,new ComputeLocByAssimulateAnnealing(),allRss);
-
+        System.out.println((System.currentTimeMillis()-startTime)/1000);
 //        drawConvex(baseStations,targetLocs,allRss);
 
     }
@@ -834,15 +845,15 @@ public class assimulateExperiment {
         assimulateExperiment experiment=new assimulateExperiment();
         experiment.setBlockSize(1);
         experiment.setWidth(400);
-        experiment.setBaseStationNum(20);
-        experiment.setTargetNum(20);
-        experiment.setNlosMaxNum(20);
+        experiment.setBaseStationNum(100);
+        experiment.setTargetNum(5);
+        experiment.setNlosMaxNum(80);
         experiment.setBeta(3.5);
         experiment.setuMax(10);
         experiment.setSigma(10);
         experiment.setP0(30);
         experiment.setArmseK(1);
-        experiment.setDiscreteRatio(1);
+        experiment.setDiscreteRatio(0.2);
         experiment.assimulate();
 //        experiment.testConvex();
     }

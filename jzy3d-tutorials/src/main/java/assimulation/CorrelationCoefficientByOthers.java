@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class CorrelationCoefficientByOthers implements CorrelationCoefficient {
     @Override
-    public double getCorrelationCoefficient(double startX, double startY, double[] rss, BaseStation[] baseStations, double aveRss, double squareRss) {
+    public CorrelationCoefficientResult getCorrelationCoefficient(double startX, double startY, double[] rss, BaseStation[] baseStations, double aveRss, double squareRss) {
         List<Double> rssList=new ArrayList();
         List<Double> dist=new ArrayList<Double>();
         for(int i=0;i<rss.length;i++){
@@ -18,6 +18,9 @@ public class CorrelationCoefficientByOthers implements CorrelationCoefficient {
         for(int i=0;i<baseStations.length;i++){
             dist.add(i,Math.log(assimulateExperiment.distance(startPoint,baseStations[i])));
         }
-        return PearsonCoefficient.coefficient(rssList,dist);
+        CorrelationCoefficientResult result=new CorrelationCoefficientResult();
+        result.setTooClose(false);
+        result.setCorrelation(PearsonCoefficient.coefficient(rssList,dist));
+        return result;
     }
 }

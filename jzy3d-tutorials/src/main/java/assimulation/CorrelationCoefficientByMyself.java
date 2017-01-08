@@ -5,7 +5,9 @@ package assimulation;
  */
 public class CorrelationCoefficientByMyself implements CorrelationCoefficient{
     @Override
-    public  double getCorrelationCoefficient(double startX, double startY, double[] rss, BaseStation[] baseStations, double aveRss, double squareRss) {
+    public  CorrelationCoefficientResult getCorrelationCoefficient(double startX, double startY, double[] rss, BaseStation[] baseStations, double aveRss, double squareRss) {
+        CorrelationCoefficientResult result=new CorrelationCoefficientResult();
+        result.setTooClose(false);
         double top=0.0;
         double squareDis=0.0;
         double[] dis=new double[baseStations.length];
@@ -14,7 +16,11 @@ public class CorrelationCoefficientByMyself implements CorrelationCoefficient{
         Point startPoint=new Point(startX,startY);
         while(k<baseStations.length){
 //            dis[k]=assimulateExperiment.distance(startPoint,baseStations[k]);
-            dis[k]=Math.log(assimulateExperiment.distance(startPoint,baseStations[k]));
+            double distance=assimulateExperiment.distance(startPoint,baseStations[k]);
+            if(distance<0.1){
+                result.setTooClose(true);
+            }
+            dis[k]=Math.log(distance);
             totalDis+=dis[k];
             k+=1;
         }
@@ -30,6 +36,7 @@ public class CorrelationCoefficientByMyself implements CorrelationCoefficient{
         if(squareDis!=0&&squareRss!=0){
             corre= (top/Math.sqrt(squareDis*squareRss));
         }
-        return corre;
+        result.setCorrelation(corre);
+        return result;
     }
 }

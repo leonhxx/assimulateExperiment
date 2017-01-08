@@ -32,6 +32,6 @@ public class MyMapper extends Mapper{
 
     @Override
     public double f(double x, double y) {
-        return assimulateTool.correlationCoefficient.getCorrelationCoefficient(x,y,rss,baseStations,aveRss,squareRss);
+        return assimulateTool.correlationCoefficient.getCorrelationCoefficient(x,y,rss,baseStations,aveRss,squareRss).getCorrelation();
     }
 }

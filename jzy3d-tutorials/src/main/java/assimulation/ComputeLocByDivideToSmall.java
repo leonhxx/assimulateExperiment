@@ -53,7 +53,7 @@ public class ComputeLocByDivideToSmall implements ComputeLoc{
                 double centerX=startX+xi*width;
                 double centerY=startY+yi*width;
 //                double correlation=correlationByOthers(centerX,centerY,rss,baseStations);
-                double correlation=correlationCoefficient.getCorrelationCoefficient(centerX,centerY,rss,baseStations,aveRss,squareRss);
+                double correlation=correlationCoefficient.getCorrelationCoefficient(centerX,centerY,rss,baseStations,aveRss,squareRss).getCorrelation();
                 if(Double.isNaN(correlation)){
                     System.out.println("wrong");
                     aveRss=0.0;
@@ -78,10 +78,11 @@ public class ComputeLocByDivideToSmall implements ComputeLoc{
             }
         }
 //        System.out.println("rss="+rss+";aveRss="+aveRss+";squareRss="+squareRss);
-        System.out.println("targetLoc correlation="+correlationCoefficient.getCorrelationCoefficient(targetLoc.getX(),targetLoc.getY(),rss,baseStations,aveRss,squareRss));
 //        System.out.println("targetLoc correlation="+correlationByOthers(targetLoc.getX(),targetLoc.getY(),rss,baseStations));
-        System.out.println("result correlation="+correlationCoefficient.getCorrelationCoefficient(resultX,resultY,rss,baseStations,aveRss,squareRss));
 //        System.out.println("result correlation="+correlationByOthers(resultX,resultY,rss,baseStations));
+
+//        System.out.println("targetLoc correlation="+correlationCoefficient.getCorrelationCoefficient(targetLoc.getX(),targetLoc.getY(),rss,baseStations,aveRss,squareRss).getCorrelation());
+        System.out.println("result correlation="+correlationCoefficient.getCorrelationCoefficient(resultX,resultY,rss,baseStations,aveRss,squareRss).getCorrelation());
         return new Point(resultX,resultY);
     }
 }

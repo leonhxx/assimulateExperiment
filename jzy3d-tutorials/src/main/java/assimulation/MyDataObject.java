@@ -15,8 +15,8 @@ public class MyDataObject extends weka.clusterers.forOPTICSAndDBScan.DataObjects
         double dist = 0.0D;
         Instance firstInstance = this.getInstance();
         Instance secondInstance = dataObject.getInstance();
-        Point firstPoint=new Point(firstInstance.valueSparse(0),firstInstance.valueSparse(1));
-        Point secondPoint=new Point(secondInstance.valueSparse(0),secondInstance.valueSparse(1));
+        Point firstPoint=new Point(firstInstance.value(assimulateExperiment.getxAttribute()),firstInstance.value(assimulateExperiment.getyAttribute()));
+        Point secondPoint=new Point(secondInstance.value(assimulateExperiment.getxAttribute()),secondInstance.value(assimulateExperiment.getyAttribute()));
         return assimulateExperiment.distance(firstPoint,secondPoint);
     }
 }

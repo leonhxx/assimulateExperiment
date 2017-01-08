@@ -123,7 +123,7 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
             for(int j=0;j<divNum;j++){
                 x=startX+j*width;
                 y=startY+i*length;
-                correlation=correlationCoefficient.getCorrelationCoefficient(x,y,rss,baseStations,aveRss,squareRss);
+                correlation=correlationCoefficient.getCorrelationCoefficient(x,y,rss,baseStations,aveRss,squareRss).getCorrelation();
                 if(correlation<bestCorrelation){
                     bestCorrelation=correlation;
                     bestX=x;
@@ -133,6 +133,7 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
         }
         InitInfo initPoint=new InitInfo();
         initPoint.setAveRss(aveRss);
+//        initPoint.setInitPoint(new Point(baseStations[0].getX(),baseStations[0].getY()));
         initPoint.setInitPoint(new Point(bestX,bestY));
         initPoint.setMaxX(maxX);
         initPoint.setMinX(minX);
@@ -151,7 +152,7 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
         double startY=initInfo.getInitPoint().getY();
 
 //        double bestCorrelation=correlationByOthers(startX,startY,rss,baseStations);
-        double bestCorrelation=correlationCoefficient.getCorrelationCoefficient(startX,startY,rss,baseStations,aveRss,squareRss);
+        double bestCorrelation=correlationCoefficient.getCorrelationCoefficient(startX,startY,rss,baseStations,aveRss,squareRss).getCorrelation();
         double bestX=startX;
         double bestY=startY;
         double preCorrelation=bestCorrelation;
@@ -178,7 +179,7 @@ public class ComputeLocByAssimulateAnnealing implements ComputeLoc{
                 }while(!(next.getX()>=minX&&next.getX()<=maxX&&next.getY()>=minY&&next.getY()<=maxY));
                 gaussTime+=1;
 //                    double correlation=correlationByOthers(next.getX(),next.getY(),rss,baseStations);
-                double correlation=correlationCoefficient.getCorrelationCoefficient(next.getX(),next.getY(),rss,baseStations,aveRss,squareRss);
+                double correlation=correlationCoefficient.getCorrelationCoefficient(next.getX(),next.getY(),rss,baseStations,aveRss,squareRss).getCorrelation();
                 if(correlation<bestCorrelation){
                     bestX=next.getX();
                     bestY=next.getY();
